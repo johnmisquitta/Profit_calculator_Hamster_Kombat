@@ -1,93 +1,149 @@
-import pandas as pd
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: inline-block;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
 
-# Setting max width display for Pandas DataFrame
-pd.set_option('display.max_colwidth', None)
+<div class="container">
+    <h1>Profit Calculator</h1>
 
-# Variables
-profit_per_hour = 41450  # without update
-updated_profit_per_hour = 5901  # without update
+    <!-- Input Form -->
+    <div class="input-group">
+        <label for="profitPerHour">Profit per Hour ($):</label>
+        <input type="number" id="profitPerHour" value="41450">
+    </div>
+    <div class="input-group">
+        <label for="updatedProfitPerHour">Updated Profit per Hour ($):</label>
+        <input type="number" id="updatedProfitPerHour" value="5901">
+    </div>
+    <div class="input-group">
+        <label for="updateCost">Cost of Update ($):</label>
+        <input type="number" id="updateCost" value="1311195">
+    </div>
+    <button onclick="calculate()">Calculate</button>
 
-updated_profit_per_hour = profit_per_hour + updated_profit_per_hour  # with update
-update_cost = 1311195  # cost of update
-days = 20  # number of days
-hours_per_day_options = [10,11,12 ,13,14,15, 16,17,18,19,20]  # hours per day
+    <!-- Profit Comparison Table -->
+    <h2>Profit Comparison</h2>
+    <table id="profitTable">
+        <thead>
+            <tr>
+                <th>Hours</th>
+                <th>Profit without Update ($)</th>
+                <th>Profit with Update ($)</th>
+                <th>Update Profitable?</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-# Function to calculate total profit without update
-def profit_without_update(hours_per_day):
-    return profit_per_hour * hours_per_day * days
+    <!-- Total Money Generated Table -->
+    <h2>Total Money Generated</h2>
+    <table id="totalMoneyTable">
+        <thead>
+            <tr>
+                <th>Hours</th>
+                <th>Without Update ($)</th>
+                <th>With Update ($) (Including cost)</th>
+                <th>Total Profit</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
-# Function to calculate total profit with update
-def profit_with_update(hours_per_day):
-    return (updated_profit_per_hour * hours_per_day * days) - update_cost
+<script>
+    const hoursPerDayOptions = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    const days = 20;
 
-# Function to calculate total money generated without update
-def total_money_without_update(hours_per_day):
-    return profit_per_hour * hours_per_day * days
+    function formatNumber(value) {
+        if (value >= 1e6) {
+            return (value / 1e6).toFixed(2) + "M";
+        } else if (value >= 1e3) {
+            return (value / 1e3).toFixed(2) + "K";
+        } else {
+            return value.toString();
+        }
+    }
 
-# Function to calculate total money generated with update (including cost)
-def total_money_with_update(hours_per_day):
-    return (updated_profit_per_hour * hours_per_day * days) - update_cost
+    function calculate() {
+        const profitPerHour = parseFloat(document.getElementById('profitPerHour').value);
+        const updatedProfitPerHourInput = parseFloat(document.getElementById('updatedProfitPerHour').value);
+        const updateCost = parseFloat(document.getElementById('updateCost').value);
 
-# Helper function to format numbers in K or M
-def format_number(value):
-    if value >= 1e6:
-        return f'{value / 1e6:.2f}M'
-    elif value >= 1e3:
-        return f'{value / 1e3:.2f}K'
-    else:
-        return str(value)
+        const updatedProfitPerHour = profitPerHour + updatedProfitPerHourInput;
 
-# Creating a DataFrame to store the profit comparison results
-data = {
-    "Hours": [],
-    "Profit without Update ($)": [],
-    "Profit with Update ($)": [],
-    "Update Profitable?": []
-}
+        const profitTableBody = document.querySelector("#profitTable tbody");
+        const totalMoneyTableBody = document.querySelector("#totalMoneyTable tbody");
 
-# Creating a DataFrame to store the total money generated results
-data_total = {
-    "Hours": [],
-    "without Update ($)": [],
-    "with Update ($) (Including cost)": []
-}
+        profitTableBody.innerHTML = ""; // Clear existing rows
+        totalMoneyTableBody.innerHTML = "";
 
-# Populate both DataFrames with data
-for hours in hours_per_day_options:
-    # Calculating profit
-    profit_no_update = profit_without_update(hours)
-    profit_yes_update = profit_with_update(hours)
-    is_profitable = profit_yes_update > profit_no_update
-    
-    data["Hours"].append(hours)
-    data["Profit without Update ($)"].append(profit_no_update)
-    data["Profit with Update ($)"].append(profit_yes_update)
-    data["Update Profitable?"].append("Yes" if is_profitable else "No")
-    
-    # Calculating total money generated
-    money_no_update = total_money_without_update(hours)
-    money_yes_update = total_money_with_update(hours)
-    
-    data_total["Hours"].append(hours)
-    data_total["without Update ($)"].append(money_no_update)
-    data_total["with Update ($) (Including cost)"].append(money_yes_update)
+        hoursPerDayOptions.forEach(hours => {
+            const profitWithoutUpdate = profitPerHour * hours * days;
+            const profitWithUpdate = (updatedProfitPerHour * hours * days) - updateCost;
 
-data_total["with Update ($) (Including cost)"] = pd.Series(data_total["with Update ($) (Including cost)"])
-data_total["without Update ($)"] = pd.Series(data_total["without Update ($)"])
-data_total["Total Profit"] = data_total["with Update ($) (Including cost)"] - data_total["without Update ($)"]
+            const totalMoneyWithoutUpdate = profitPerHour * hours * days;
+            const totalMoneyWithUpdate = (updatedProfitPerHour * hours * days) - updateCost;
+            const totalProfit = totalMoneyWithUpdate - totalMoneyWithoutUpdate;
 
-# Convert both sets of data to DataFrames
-df_profit = pd.DataFrame(data)
-df_total = pd.DataFrame(data_total)
+            const isProfitable = profitWithUpdate > profitWithoutUpdate ? "Yes" : "No";
 
-# Apply formatting to the numeric columns
-df_profit["Profit without Update ($)"] = df_profit["Profit without Update ($)"].apply(format_number)
-df_profit["Profit with Update ($)"] = df_profit["Profit with Update ($)"].apply(format_number)
-df_total["without Update ($)"] = df_total["without Update ($)"].apply(format_number)
-df_total["with Update ($) (Including cost)"] = df_total["with Update ($) (Including cost)"].apply(format_number)
-df_total["Total Profit"] = df_total["Total Profit"].apply(format_number)
+            // Profit Comparison Table Row
+            const profitRow = `
+                <tr>
+                    <td>${hours}</td>
+                    <td>${formatNumber(profitWithoutUpdate)}</td>
+                    <td>${formatNumber(profitWithUpdate)}</td>
+                    <td>${isProfitable}</td>
+                </tr>
+            `;
+            profitTableBody.insertAdjacentHTML('beforeend', profitRow);
 
-# Display both DataFrames
-print(df_profit)
-print(df_total)
+            // Total Money Generated Table Row
+            const totalMoneyRow = `
+                <tr>
+                    <td>${hours}</td>
+                    <td>${formatNumber(totalMoneyWithoutUpdate)}</td>
+                    <td>${formatNumber(totalMoneyWithUpdate)}</td>
+                    <td>${formatNumber(totalProfit)}</td>
+                </tr>
+            `;
+            totalMoneyTableBody.insertAdjacentHTML('beforeend', totalMoneyRow);
+        });
+    }
+</script>
 
+</body>
+</html>
