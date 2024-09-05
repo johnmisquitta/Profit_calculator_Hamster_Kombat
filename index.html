@@ -91,13 +91,19 @@
     const hoursPerDayOptions = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
     function formatNumber(value) {
-        if (value >= 1e6) {
-            return (value / 1e6).toFixed(2) + "M";
-        } else if (value >= 1e3) {
-            return (value / 1e3).toFixed(2) + "K";
+        const sign = Math.sign(value);
+        const absValue = Math.abs(value);
+        let formatted;
+
+        if (absValue >= 1e6) {
+            formatted = (absValue / 1e6).toFixed(2) + "M";
+        } else if (absValue >= 1e3) {
+            formatted = (absValue / 1e3).toFixed(2) + "K";
         } else {
-            return value.toFixed(2);
+            formatted = absValue.toFixed(2);
         }
+
+        return sign < 0 ? `-${formatted}` : formatted;
     }
 
     function calculate() {
