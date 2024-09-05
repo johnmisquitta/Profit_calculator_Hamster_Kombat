@@ -1,1 +1,93 @@
+import pandas as pd
+
+# Setting max width display for Pandas DataFrame
+pd.set_option('display.max_colwidth', None)
+
+# Variables
+profit_per_hour = 41450  # without update
+updated_profit_per_hour = 5901  # without update
+
+updated_profit_per_hour = profit_per_hour + updated_profit_per_hour  # with update
+update_cost = 1311195  # cost of update
+days = 20  # number of days
+hours_per_day_options = [10,11,12 ,13,14,15, 16,17,18,19,20]  # hours per day
+
+# Function to calculate total profit without update
+def profit_without_update(hours_per_day):
+    return profit_per_hour * hours_per_day * days
+
+# Function to calculate total profit with update
+def profit_with_update(hours_per_day):
+    return (updated_profit_per_hour * hours_per_day * days) - update_cost
+
+# Function to calculate total money generated without update
+def total_money_without_update(hours_per_day):
+    return profit_per_hour * hours_per_day * days
+
+# Function to calculate total money generated with update (including cost)
+def total_money_with_update(hours_per_day):
+    return (updated_profit_per_hour * hours_per_day * days) - update_cost
+
+# Helper function to format numbers in K or M
+def format_number(value):
+    if value >= 1e6:
+        return f'{value / 1e6:.2f}M'
+    elif value >= 1e3:
+        return f'{value / 1e3:.2f}K'
+    else:
+        return str(value)
+
+# Creating a DataFrame to store the profit comparison results
+data = {
+    "Hours": [],
+    "Profit without Update ($)": [],
+    "Profit with Update ($)": [],
+    "Update Profitable?": []
+}
+
+# Creating a DataFrame to store the total money generated results
+data_total = {
+    "Hours": [],
+    "without Update ($)": [],
+    "with Update ($) (Including cost)": []
+}
+
+# Populate both DataFrames with data
+for hours in hours_per_day_options:
+    # Calculating profit
+    profit_no_update = profit_without_update(hours)
+    profit_yes_update = profit_with_update(hours)
+    is_profitable = profit_yes_update > profit_no_update
+    
+    data["Hours"].append(hours)
+    data["Profit without Update ($)"].append(profit_no_update)
+    data["Profit with Update ($)"].append(profit_yes_update)
+    data["Update Profitable?"].append("Yes" if is_profitable else "No")
+    
+    # Calculating total money generated
+    money_no_update = total_money_without_update(hours)
+    money_yes_update = total_money_with_update(hours)
+    
+    data_total["Hours"].append(hours)
+    data_total["without Update ($)"].append(money_no_update)
+    data_total["with Update ($) (Including cost)"].append(money_yes_update)
+
+data_total["with Update ($) (Including cost)"] = pd.Series(data_total["with Update ($) (Including cost)"])
+data_total["without Update ($)"] = pd.Series(data_total["without Update ($)"])
+data_total["Total Profit"] = data_total["with Update ($) (Including cost)"] - data_total["without Update ($)"]
+
+# Convert both sets of data to DataFrames
+df_profit = pd.DataFrame(data)
+df_total = pd.DataFrame(data_total)
+
+# Apply formatting to the numeric columns
+df_profit["Profit without Update ($)"] = df_profit["Profit without Update ($)"].apply(format_number)
+df_profit["Profit with Update ($)"] = df_profit["Profit with Update ($)"].apply(format_number)
+df_total["without Update ($)"] = df_total["without Update ($)"].apply(format_number)
+df_total["with Update ($) (Including cost)"] = df_total["with Update ($) (Including cost)"].apply(format_number)
+df_total["Total Profit"] = df_total["Total Profit"].apply(format_number)
+
+# Display both DataFrames
+print(df_profit)
+print(df_total)
 
